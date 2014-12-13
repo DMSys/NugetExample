@@ -8,12 +8,12 @@ using System.IO;
 
 namespace ngSQLite
 {
-    // http://www.dreamincode.net/forums/topic/157830-using-sqlite-with-c%23/
+    /// <summary>
+    /// 
+    /// </summary>
     public class SQLiteDatabase: IDisposable
     {
         private String _DataSource = "TestBase.db";
-
-        private String _ConnectionString = "";
 
         private SQLiteConnection _Connection = null;
 
@@ -24,8 +24,7 @@ namespace ngSQLite
         public SQLiteDatabase(String dataSource = "TestBase.db")
         {
             _DataSource = dataSource;
-            _ConnectionString = String.Format("Data Source={0}", dataSource);
-            _Connection = new SQLiteConnection(_ConnectionString);
+            _Connection = new SQLiteConnection(String.Format("Data Source={0}", dataSource));
         }
 
         /// <summary>
@@ -34,17 +33,16 @@ namespace ngSQLite
         /// <param name="connectionOpts">A dictionary containing all desired options and their values</param>
         public SQLiteDatabase(Dictionary<String, String> connectionOpts)
         {
-            StringBuilder strBuilder = new StringBuilder();
+            StringBuilder connectionString = new StringBuilder();
             foreach (KeyValuePair<String, String> row in connectionOpts)
             {
-                if (row.Key == "Data Source")
+                if (row.Key.ToLower() == "data source")
                 {
                     _DataSource = row.Value;
                 }
-                strBuilder.Append(String.Format("{0}={1};", row.Key, row.Value));
+                connectionString.AppendFormat("{0}={1};", row.Key, row.Value);
             }
-            _ConnectionString = strBuilder.ToString();
-            _Connection = new SQLiteConnection(_ConnectionString);
+            _Connection = new SQLiteConnection(connectionString.ToString());
         }
 
         /// <summary>
@@ -59,6 +57,8 @@ namespace ngSQLite
                 _Connection = null;
             }
         }
+
+        #region Database
 
         /// <summary>
         ///     Opens the connection using the parameters found in the System.Data.SQLite.SQLiteConnection.ConnectionString.
@@ -91,64 +91,159 @@ namespace ngSQLite
         /// <summary>
         ///     Allows the programmer to run a query against the Database.
         /// </summary>
-        /// <param name="sql">The SQL to run</param>
+        /// <param name="selectCommand">The SQL to run</param>
         /// <returns>A DataTable containing the result set.</returns>
-        public DataTable GetDataTable(string sql)
+        public DataTable FillToDataTable(String selectCommand)
         {
-            DataTable dt = new DataTable();
-            try
+            DataTable dTable = new DataTable();
+            using (SQLiteCommand command = new SQLiteCommand(_Connection))
             {
-                SQLiteConnection cnn = new SQLiteConnection(_ConnectionString);
-                cnn.Open();
-                SQLiteCommand mycommand = new SQLiteCommand(cnn);
-                mycommand.CommandText = sql;
-                SQLiteDataReader reader = mycommand.ExecuteReader();
-                dt.Load(reader);
-                reader.Close();
-                cnn.Close();
+                command.CommandText = selectCommand;
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    dTable.Load(reader);
+                    reader.Close();
+                }
             }
-            catch (Exception e)
+            return dTable;
+        }
+
+        /// <summary>
+        ///     Allows the programmer to run a query against the Database.
+        /// </summary>
+        /// <param name="selectCommand">The SQL to run</param>
+        /// <param name="fieldName"></param>
+        /// <returns>A string list containing the result set.</returns>
+        public List<String> FillToStringList(String selectCommand, String fieldName)
+        {
+            List<String> listString = new List<String>();
+            using (SQLiteCommand command = new SQLiteCommand(_Connection))
             {
-                throw new Exception(e.Message);
+                command.CommandText = selectCommand;
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        listString.Add(reader[fieldName].ToString());
+                    }
+                    reader.Close();
+                }
             }
-            return dt;
+            return listString;
         }
 
         /// <summary>
         ///     Allows the programmer to interact with the database for purposes other than a query.
         /// </summary>
-        /// <param name="sql">The SQL to be run.</param>
+        /// <param name="commandText">The SQL to be run.</param>
         /// <returns>An Integer containing the number of rows updated.</returns>
-        public int ExecuteNonQuery(string sql)
+        public int ExecuteNonQuery(string commandText)
         {
-            SQLiteConnection cnn = new SQLiteConnection(_ConnectionString);
-            cnn.Open();
-            SQLiteCommand mycommand = new SQLiteCommand(cnn);
-            mycommand.CommandText = sql;
-            int rowsUpdated = mycommand.ExecuteNonQuery();
-            cnn.Close();
-            return rowsUpdated;
+            int affectedRows = 0;
+            using (SQLiteCommand command = new SQLiteCommand(_Connection))
+            {
+                command.CommandText = commandText;
+                affectedRows = command.ExecuteNonQuery();
+            }
+            return affectedRows;
         }
 
         /// <summary>
         ///     Allows the programmer to retrieve single items from the DB.
         /// </summary>
-        /// <param name="sql">The query to run.</param>
-        /// <returns>A string.</returns>
-        public string ExecuteScalar(string sql)
+        /// <param name="commandText">The query to run.</param>
+        /// <returns>A object.</returns>
+        public object ExecuteScalar(string commandText)
         {
-            SQLiteConnection cnn = new SQLiteConnection(_ConnectionString);
-            cnn.Open();
-            SQLiteCommand mycommand = new SQLiteCommand(cnn);
-            mycommand.CommandText = sql;
-            object value = mycommand.ExecuteScalar();
-            cnn.Close();
-            if (value != null)
+            object value = null;
+            using (SQLiteCommand command = new SQLiteCommand(_Connection))
             {
-                return value.ToString();
+                command.CommandText = commandText;
+                value = command.ExecuteScalar();
             }
-            return "";
+            return value;
         }
+
+        /// <summary>
+        ///     Allows the programmer to retrieve single items from the DB.
+        /// </summary>
+        /// <param name="commandText">The query to run.</param>
+        /// <param name="defaultValue"></param>
+        /// <returns>A string.</returns>
+        public string ExecuteScalarToString(string commandText, string defaultValue = "")
+        {
+            object value = this.ExecuteScalar(commandText);
+            return ((value == null) ? defaultValue : value.ToString());
+        }
+
+        /// <summary>
+        ///     Allows the programmer to retrieve single items from the DB.
+        /// </summary>
+        /// <param name="commandText">The query to run.</param>
+        /// <param name="defaultValue"></param>
+        /// <returns>A Int32.</returns>
+        public Int32 ExecuteScalarToInt32(string commandText, Int32 defaultValue = 0)
+        {
+            object value = this.ExecuteScalar(commandText);
+            if (value == null)
+            {
+                Int32 intValue = defaultValue;
+                return (Int32.TryParse(value.ToString(), out intValue) ? intValue : defaultValue);
+            }
+            else
+            { return defaultValue; }
+        }
+
+        /// <summary>
+        ///     Allows the user to easily reduce size of database.
+        /// </summary>
+        /// <returns>A boolean true or false to signify success or failure.</returns>
+        public Int32 Vacuum(string tableName = "")
+        {
+            if (tableName == "")
+            {
+                return ExecuteNonQuery("VACUUM;");
+            }
+            else
+            {
+                return ExecuteNonQuery(String.Format("VACUUM {0};", tableName));
+            }
+        }
+
+        /// <summary>
+        /// List the names of database tables
+        /// </summary>
+        /// <returns></returns>
+        public List<String> ListTablesName()
+        {
+            return this.FillToStringList("select NAME from SQLITE_MASTER where type='table' order by NAME;", "NAME");
+        }
+
+        /// <summary>
+        /// List of tables in database
+        /// </summary>
+        /// <returns></returns>
+        public DataTable ListTables()
+        {
+            return this.FillToDataTable("select * from SQLITE_MASTER where type='table' order by NAME;");
+        }
+        
+        /// <summary>
+        ///     Allows the programmer to easily delete all data from the DB.
+        /// </summary>
+        /// <returns>A boolean true or false to signify success or failure.</returns>
+        public void Clear()
+        {
+            List<String> tables = this.ListTablesName();
+            foreach (String tableName in tables)
+            {
+                this.Delete(tableName);
+            }
+        }
+
+        #endregion Database
+
+        #region SQL
 
         /// <summary>
         ///     Allows the programmer to easily update rows in the DB.
@@ -186,11 +281,50 @@ namespace ngSQLite
         /// <param name="tableName">The table from which to delete.</param>
         /// <param name="where">The where clause for the delete.</param>
         /// <returns>A boolean true or false to signify success or failure.</returns>
-        public bool Delete(String tableName, String where)
+        public int Delete(String tableName, String where = "")
         {
-            int returnRows = this.ExecuteNonQuery(String.Format("delete from {0} where {1};", tableName, where));
+            StringBuilder deleteCommand = new StringBuilder();
+            deleteCommand.AppendFormat("delete from {0}", tableName);
+            if (!String.IsNullOrEmpty(where))
+            {
+                deleteCommand.AppendFormat(" where {0}", where);
+            }
+            deleteCommand.Append(";");
 
-            return (returnRows > 0);
+            return this.ExecuteNonQuery(deleteCommand.ToString());            
+        }
+        
+        /// <summary>
+        ///     Allows the programmer to easily insert into the DB
+        /// </summary>
+        /// <param name="tableName">The table into which we insert the data.</param>
+        /// <param name="data">A dictionary containing the column names and data for the insert.</param>
+        /// <returns>A boolean true or false to signify success or failure.</returns>
+        public int Insert(String tableName, Dictionary<String, String> data)
+        {
+            StringBuilder columns = new StringBuilder();
+            StringBuilder values = new StringBuilder();
+            bool isFirstRow = true;
+            foreach (KeyValuePair<String, String> val in data)
+            {
+                if (isFirstRow)
+                {
+                    columns.AppendFormat("{0}", val.Key.ToString());
+                    values.AppendFormat("'{0}'", ValidateParameter(val.Value));
+                    isFirstRow = false;
+                }
+                else
+                {
+                    columns.AppendFormat(", {0}", val.Key.ToString());
+                    values.AppendFormat(", '{0}'", ValidateParameter(val.Value));
+                }
+            }
+            string commandText = String.Format("insert into {0}({1}) values({2});"
+                , tableName, columns.ToString(), values.ToString());
+            columns.Clear();
+            values.Clear();
+
+            return this.ExecuteNonQuery(commandText);
         }
 
         /// <summary>
@@ -199,63 +333,61 @@ namespace ngSQLite
         /// <param name="tableName">The table into which we insert the data.</param>
         /// <param name="data">A dictionary containing the column names and data for the insert.</param>
         /// <returns>A boolean true or false to signify success or failure.</returns>
-        public bool Insert(String tableName, Dictionary<String, String> data)
+        public int Insert(String tableName, List<String> data)
         {
-            String columns = "";
-            String values = "";
-            int returnRows = 0;
-            foreach (KeyValuePair<String, String> val in data)
+            StringBuilder values = new StringBuilder();
+            bool isFirstRow = true;
+            foreach (String value in data)
             {
-                columns += String.Format(" {0},", val.Key.ToString());
-                values += String.Format(" '{0}',", val.Value);
-            }
-            columns = columns.Substring(0, columns.Length - 1);
-            values = values.Substring(0, values.Length - 1);
-
-            returnRows = this.ExecuteNonQuery(String.Format("insert into {0}({1}) values({2});", tableName, columns, values));
-
-            return (returnRows > 0);
-        }
-
-        /// <summary>
-        ///     Allows the programmer to easily delete all data from the DB.
-        /// </summary>
-        /// <returns>A boolean true or false to signify success or failure.</returns>
-        public bool ClearDB()
-        {
-            DataTable tables;
-            try
-            {
-                tables = this.GetDataTable("select NAME from SQLITE_MASTER where type='table' order by NAME;");
-                foreach (DataRow table in tables.Rows)
+                if (isFirstRow)
                 {
-                    this.ClearTable(table["NAME"].ToString());
+                    values.AppendFormat("'{0}'", ValidateParameter(value));
+                    isFirstRow = false;
                 }
-                return true;
+                else
+                {
+                    values.AppendFormat(", '{0}'", ValidateParameter(value));
+                }
             }
-            catch
-            {
-                return false;
-            }
+            string commandText =
+                String.Format("insert into {0} values({1});", tableName, values.ToString());
+            values.Clear();
+
+            return this.ExecuteNonQuery(commandText);
         }
 
         /// <summary>
-        ///     Allows the user to easily clear all data from a specific table.
+        ///     Validate the value of the parameter
         /// </summary>
-        /// <param name="table">The name of the table to clear.</param>
-        /// <returns>A boolean true or false to signify success or failure.</returns>
-        public bool ClearTable(String table)
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string ValidateParameter(string value)
         {
-            try
-            {
+            return value.Replace("'", "''");
+        }
 
-                this.ExecuteNonQuery(String.Format("delete from {0};", table));
-                return true;
-            }
-            catch
+        /// <summary>
+        /// Drop table by name
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <returns></returns>
+        public int DropTable(String tableName)
+        {
+            return this.ExecuteNonQuery(String.Format("drop table if exists {0}", tableName));
+        }
+
+        /// <summary>
+        /// Drop database
+        /// </summary>
+        /// <returns></returns>
+        public void DropDatabase()
+        {
+            if (File.Exists(_DataSource))
             {
-                return false;
+                File.Delete(_DataSource);
             }
         }
+
+        #endregion SQL
     }
 }
