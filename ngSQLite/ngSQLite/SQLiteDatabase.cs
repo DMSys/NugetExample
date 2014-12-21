@@ -17,6 +17,8 @@ namespace ngSQLite
 
         private SQLiteConnection _Connection = null;
 
+        private SQLiteTransaction _Transaction = null;
+
         /// <summary>
         ///     Single Param Constructor for specifying the DB file.
         /// </summary>
@@ -252,27 +254,30 @@ namespace ngSQLite
         /// <param name="data">A dictionary containing Column names and their new values.</param>
         /// <param name="where">The where clause for the update statement.</param>
         /// <returns>A boolean true or false to signify success or failure.</returns>
-        public bool Update(String tableName, Dictionary<String, String> data, String where)
+        public int Update(String tableName, Dictionary<String, String> data, String where)
         {
-            String vals = "";
-            Boolean returnCode = true;
-            if (data.Count >= 1)
+            if ((data == null) || (data.Count == 0))
+            { return 0; }
+
+            bool isFirstRow = true;
+            StringBuilder updateCommand = new StringBuilder();
+            updateCommand.AppendFormat("update {0} set ", tableName);
+
+            foreach (KeyValuePair<String, String> val in data)
             {
-                foreach (KeyValuePair<String, String> val in data)
+                if (isFirstRow)
                 {
-                    vals += String.Format(" {0} = '{1}',", val.Key.ToString(), val.Value.ToString());
+                    updateCommand.AppendFormat("{0} = {1}", val.Key.ToString(), val.Value.ToString());
+                    isFirstRow = false;
                 }
-                vals = vals.Substring(0, vals.Length - 1);
+                else
+                {
+                    updateCommand.AppendFormat(", {0} = {1}", val.Key.ToString(), val.Value.ToString());
+                }
             }
-            try
-            {
-                this.ExecuteNonQuery(String.Format("update {0} set {1} where {2};", tableName, vals, where));
-            }
-            catch
-            {
-                returnCode = false;
-            }
-            return returnCode;
+            updateCommand.AppendFormat(" where {0};", where);
+
+            return this.ExecuteNonQuery(updateCommand.ToString());
         }
 
         /// <summary>

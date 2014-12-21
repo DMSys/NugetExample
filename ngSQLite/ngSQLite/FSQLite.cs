@@ -41,6 +41,7 @@ namespace ngSQLite
     trackid     INTEGER, 
     trackname   TEXT, 
     trackartist INTEGER,
+    likecount   INTEGER,
     FOREIGN KEY(trackartist) REFERENCES artist(artistid)
   );
   CREATE INDEX trackindex ON track(trackartist);
@@ -59,22 +60,25 @@ namespace ngSQLite
                     {
                         { "trackid", "11"},
                         { "trackname", "That's Amore"},
-                        { "trackartist", "1"}
+                        { "trackartist", "1"},
+                        { "likecount", "0"}
                     });
                     db.Insert("track", new Dictionary<string, string>
                     {
                         { "trackid", "12"},
                         { "trackname", "Christmas Blues"},
-                        { "trackartist", "1"}
+                        { "trackartist", "1"},
+                        { "likecount", "0"}
                     });
                     db.Insert("track", new Dictionary<string, string>
                     {
                         { "trackid", "13"},
                         { "trackname", "My Way"},
-                        { "trackartist", "2"}
+                        { "trackartist", "2"},
+                        { "likecount", "0"}
                     });
-                    db.Insert("track", new List<string> { "14", "The Way You Look Tonight", "2" });
-                    db.Insert("track", new List<string> { "15", "I Could Have Danced All Night", "2" });
+                    db.Insert("track", new List<string> { "14", "The Way You Look Tonight", "2", "0" });
+                    db.Insert("track", new List<string> { "15", "I Could Have Danced All Night", "2", "0" });
 
                     db.Vacuum();
                     db.Close();
@@ -138,6 +142,31 @@ namespace ngSQLite
                 using (SQLiteDatabase db = new SQLiteDatabase(_DataSource))
                 {
                     db.DropDatabase();
+                }
+                MessageBox.Show("Successfully.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().ToString() + " : " + ex.Message);
+            }
+        }
+
+        private void btn_Update_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SQLiteDatabase db = new SQLiteDatabase(_DataSource))
+                {
+                    db.Open();
+
+                    db.Update("track",
+                        new Dictionary<string, string>
+                        {
+                            { "likecount", "likecount + 1"}
+                        },
+                        "trackid = 13");
+                    
+                    db.Close();
                 }
                 MessageBox.Show("Successfully.");
             }

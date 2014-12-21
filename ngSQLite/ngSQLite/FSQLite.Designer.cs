@@ -32,6 +32,8 @@
             this.btn_Clean = new System.Windows.Forms.Button();
             this.btn_DropTables = new System.Windows.Forms.Button();
             this.btn_DropDatabase = new System.Windows.Forms.Button();
+            this.btn_Updata = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btn_Initialize
@@ -74,11 +76,32 @@
             this.btn_DropDatabase.UseVisualStyleBackColor = true;
             this.btn_DropDatabase.Click += new System.EventHandler(this.btn_DropDatabase_Click);
             // 
+            // btn_Updata
+            // 
+            this.btn_Updata.Location = new System.Drawing.Point(118, 12);
+            this.btn_Updata.Name = "btn_Updata";
+            this.btn_Updata.Size = new System.Drawing.Size(75, 23);
+            this.btn_Updata.TabIndex = 4;
+            this.btn_Updata.Text = "Update";
+            this.btn_Updata.UseVisualStyleBackColor = true;
+            this.btn_Updata.Click += new System.EventHandler(this.btn_Update_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(199, 12);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
             // FSQLite
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(455, 273);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btn_Updata);
             this.Controls.Add(this.btn_DropDatabase);
             this.Controls.Add(this.btn_DropTables);
             this.Controls.Add(this.btn_Clean);
@@ -96,6 +119,8 @@
         private System.Windows.Forms.Button btn_Clean;
         private System.Windows.Forms.Button btn_DropTables;
         private System.Windows.Forms.Button btn_DropDatabase;
+        private System.Windows.Forms.Button btn_Updata;
+        private System.Windows.Forms.Button button1;
     }
 }
 
