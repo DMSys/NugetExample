@@ -33,7 +33,8 @@
             this.btn_DropTables = new System.Windows.Forms.Button();
             this.btn_DropDatabase = new System.Windows.Forms.Button();
             this.btn_Updata = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btn_TransactionCommit = new System.Windows.Forms.Button();
+            this.btn_TransactionRollback = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btn_Initialize
@@ -86,21 +87,33 @@
             this.btn_Updata.UseVisualStyleBackColor = true;
             this.btn_Updata.Click += new System.EventHandler(this.btn_Update_Click);
             // 
-            // button1
+            // btn_TransactionCommit
             // 
-            this.button1.Location = new System.Drawing.Point(199, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btn_TransactionCommit.Location = new System.Drawing.Point(199, 12);
+            this.btn_TransactionCommit.Name = "btn_TransactionCommit";
+            this.btn_TransactionCommit.Size = new System.Drawing.Size(123, 23);
+            this.btn_TransactionCommit.TabIndex = 5;
+            this.btn_TransactionCommit.Text = "Transaction Commit";
+            this.btn_TransactionCommit.UseVisualStyleBackColor = true;
+            this.btn_TransactionCommit.Click += new System.EventHandler(this.btn_TransactionCommit_Click);
+            // 
+            // btn_TransactionRollback
+            // 
+            this.btn_TransactionRollback.Location = new System.Drawing.Point(199, 41);
+            this.btn_TransactionRollback.Name = "btn_TransactionRollback";
+            this.btn_TransactionRollback.Size = new System.Drawing.Size(123, 23);
+            this.btn_TransactionRollback.TabIndex = 6;
+            this.btn_TransactionRollback.Text = "Transaction Rollback";
+            this.btn_TransactionRollback.UseVisualStyleBackColor = true;
+            this.btn_TransactionRollback.Click += new System.EventHandler(this.btn_TransactionRollback_Click);
             // 
             // FSQLite
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(455, 273);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btn_TransactionRollback);
+            this.Controls.Add(this.btn_TransactionCommit);
             this.Controls.Add(this.btn_Updata);
             this.Controls.Add(this.btn_DropDatabase);
             this.Controls.Add(this.btn_DropTables);
@@ -120,7 +133,8 @@
         private System.Windows.Forms.Button btn_DropTables;
         private System.Windows.Forms.Button btn_DropDatabase;
         private System.Windows.Forms.Button btn_Updata;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btn_TransactionCommit;
+        private System.Windows.Forms.Button btn_TransactionRollback;
     }
 }
 

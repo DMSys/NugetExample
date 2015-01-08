@@ -175,5 +175,73 @@ namespace ngSQLite
                 MessageBox.Show(ex.GetType().ToString() + " : " + ex.Message);
             }
         }
+
+        private void btn_TransactionCommit_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SQLiteDatabase db = new SQLiteDatabase(_DataSource))
+                {
+                    db.Open();
+                    db.TransactionBegin();
+                    try
+                    {
+                        db.Update("track",
+                            new Dictionary<string, string>
+                        {
+                            { "likecount", "likecount + 1"}
+                        },
+                            "trackid = 13");
+
+                        db.TransactionCommit();
+                    }
+                    catch (Exception ex)
+                    {
+                        db.TransactionRollback();
+                        throw ex;
+                    }
+                    db.Close();
+                }
+                MessageBox.Show("Successfully.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().ToString() + " : " + ex.Message);
+            }
+        }
+
+        private void btn_TransactionRollback_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SQLiteDatabase db = new SQLiteDatabase(_DataSource))
+                {
+                    db.Open();
+                    db.TransactionBegin();
+                    try
+                    {
+                        db.Update("track",
+                            new Dictionary<string, string>
+                        {
+                            { "likecount1", "likecount + 1"}
+                        },
+                            "trackid = 13");
+
+                        db.TransactionCommit();
+                    }
+                    catch (Exception ex)
+                    {
+                        db.TransactionRollback();
+                        throw ex;
+                    }
+                    db.Close();
+                }
+                MessageBox.Show("Successfully.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().ToString() + " : " + ex.Message);
+            }
+        }
     }
 }

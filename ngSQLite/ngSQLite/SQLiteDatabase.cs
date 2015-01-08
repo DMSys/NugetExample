@@ -243,6 +243,34 @@ namespace ngSQLite
             }
         }
 
+        /// <summary>
+        /// Begin transaction
+        /// </summary>
+        public void TransactionBegin()
+        {
+            _Transaction = _Connection.BeginTransaction();
+        }
+
+        /// <summary>
+        /// Commit transaction
+        /// </summary>
+        public void TransactionCommit()
+        {
+            if (_Transaction == null)
+            { return; }
+            _Transaction.Commit();
+        }
+
+        /// <summary>
+        /// Rollback transaction
+        /// </summary>
+        public void TransactionRollback()
+        {
+            if (_Transaction == null)
+            { return; }
+            _Transaction.Rollback();
+        }
+        
         #endregion Database
 
         #region SQL
